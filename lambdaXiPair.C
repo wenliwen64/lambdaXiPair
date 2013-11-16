@@ -2,7 +2,7 @@
 #include "TFile.h"
 #include "TH1F.h"
 #include "TChain.h"
-#include "StV0dst.h"
+#include "StV0dst.h"//TODO: include the header file of StPhysicalHelix.h
 void lambdaXiPair(){
 //================Initialize Some Parameters================================================
     Double_t xiMass = 1.321;
@@ -10,7 +10,9 @@ void lambdaXiPair(){
     
 //================Chain Them And Initialize The Accepting Structure==========================
     TChain* chain = new TChain("chainTree");
+    
     chain -> Add("/media/qi_/day133/*picodst*");
+    chain -> MakeClass("v0dst");
     
     gRoot -> LoadMacro("v0dst.C");// Just load this structure. but we can do by including header file, right? But this is just a macro. Anyway we have to load the StPhysical Helix header file
     v0dst v0dst(chain);
@@ -34,11 +36,11 @@ void lambdaXiPair(){
 
             StPhysicalHelix lambdaHelix//TODO
           
-            if(!pSetOfCutsLambda(v0dst)) continue;//TODO: Implement this function
+            if(!pSetOfCutsLambda(v0dst, j)) continue;//TODO: Implement this function
 
             for(Int_t k = 0; k < numberOfXi; k++){
                 
-                if(!pSetOfCutsXi(v0dst)) continue;//TODO: Implement this cuts set function
+                if(!pSetOfCutsXi(v0dst, k)) continue;//TODO: Implement this cuts set function
 
                 StPhysicalHelix xiHelix//TODO
                 StThreeVectorF boundStatePosition;
@@ -48,7 +50,7 @@ void lambdaXiPair(){
 
 //================Calculate The Invariant Mass========================
                 if(pCutLambdaXiDca(lambdaXiDca)){
-                    
+                                        
                     Double_t lambdaE = sqrt(lambdaMass * lambdaMass + lambdaP * lambdaP);
                     Double_t xiE = sqrt(xiMass * xiMass + xiP * xiP);
 
@@ -70,28 +72,37 @@ Bool_t pCutLambdaXiDca(Double_t dca){
     else return true;
 }
 
-Bool_t pSetOfCutsLambda(v0dst v0dst){// TODO: finish these blanks
-    if(v0dst.v02PV > ) return false;
-    if(v0dst.v0Rapidity > ) return false;
-    if(v0dst.v0DecLength > ) return false;
-    if(v0dst.v0Dca2Dau >) return false;
-    if(v0dst.dau1Dca < ) return false;
-    if(v0dst.dau2Dca < ) return false;
-    if(v0dst.dau1NsigmaProton > ) return false;
-    if(v0dst.dau2NsigmaPion > ) return false;
+Bool_t pSetOfCutsLambda(v0dst v0dst, Int_t j){// TODO: finish these blanks
+
+    if(v0dst.v0dca_Lambda[j] > 0.4) return false;
+    if(v0dst.v0rapidity_Lambda[j] > 0.8) return false;//TODO: whats this
+    if(v0dst.v0declen_Lambda[j] < 5.0) return false;
+    if(v0dst.dca1to2_Lambda[j] > 0.8) return false;
+    if(v0dst.dau1dca_Lambda[j] < 0.6) return false;
+    if(v0dst.dau2dca_Lambda[j] < 1.5) return false;//TODO: why difference?
+    if(v0dst.dau1nsigma_Lambda[j] > 3.0) return false;
+    if(v0dst.dau2nsigma_Lambda[j] > 3.0) return false;
    
     else return true;
 }
 
-Bool_t pSetOfCutsxi(v0dst v0dst){// TODO: Double check whether this is ok for Xi or we need some modification 
-    if(v0dst.v02PV > ) return false;
-    if(v0dst.v0Rapidity > ) return false;
-    if(v0dst.v0DecLength > ) return false;
-    if(v0dst.v0Dca2Dau >) return false;
-    if(v0dst.dau1Dca < ) return false;
-    if(v0dst.dau2Dca < ) return false;
-    if(v0dst.dau1NsigmaProton > ) return false;
-    if(v0dst.dau2NsigmaPion > ) return false;
+Bool_t pSetOfCutsXi(v0dst v0dst, Int_t k){// TODO: Double check whether this is ok for Xi or we need some modification 
+    if(v0dst.v0dca_Xi[k] > 0.4) return false;//TODO: should be bigger than some value
+    if(v0dst.v0rapidity_Xi[k] > 0.8) return false;
+    if(v0dst.v0declen_Xi[k] < 5.0) return false;
+
+    if(v0dst.dcav0tobach_Xi[k] > 0.8) return false;
+
+    if(v0dst.dca1to2_Xi[k] > 0.8) return false;
+    if(v0dst.dau1dca_Xi[k] < 0.6) return false;
+    if(v0dst.dau2dca_Xi[k] < 1.5) return false;
+    if(v0dst.dau1nsigma_Xi[k] > 3.0) return false;
+    if(v0dst.dau2nsigma_Xi[k] > 3.0) return false;
+    
+    if(v0dst.dau1id_Lambda == v0dst.dau1id_Xi) return false;//TODO: this cut is to eliminate the possibility that xi is the father of the pairing lambda, but need to be implemented.
+    if(v0dst.dau2id_Lambda == v0dst.dau2id_Xi) return false;
+    if(v0dst.dau2id_Lambda == v0dst.bachid_Xi) return false;
+    if(v0dst.dau2id_Xi == v0dst.bachid_Xi) return false;
    
     else return true;
 }
