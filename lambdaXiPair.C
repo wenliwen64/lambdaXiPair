@@ -3,6 +3,7 @@
 #include "TH1F.h"
 #include "TChain.h"
 #include "StV0dst.h"//TODO: include the header file of StPhysicalHelix.h
+#include "MyHelix.h"
 void lambdaXiPair(){
 //================Initialize Some Parameters================================================
     Double_t xiMass = 1.321;
@@ -34,19 +35,26 @@ void lambdaXiPair(){
 
         for(Int_t j = 0; j < numberOfLambda; j++){
 
-            StPhysicalHelix lambdaHelix//TODO
+            StThreeVectorF primaryVertexPosition(v0dst.primvertexX, v0dst.primvertexY, v0dst.primvertexZ);
+
+            StThreeVectorF pLambda(v0dst.v0px_Lambda[j], v0dst.v0py_Lambda[j], v0dst.v0pz_Lambda[j]);
+            StThreeVectorf xLambda(v0dst.v0x_Lambda[j], v0dst.v0y_Lambda[j], v0dst.v0z_Lambda[j]);
+            StPhysicalHelix lambdaHelix(pLambda / pLambda.perp() * 100, xLambda, v0dst.magn * kilogauss, 1);//TODO
           
             if(!pSetOfCutsLambda(v0dst, j)) continue;//TODO: Implement this function
 
             for(Int_t k = 0; k < numberOfXi; k++){
                 
+                StThreeVectorF pXi(v0dst.v0px_Xi[k], v0dst.v0py_Xi[k], v0dst.v0pz_Xi[k]);
+                StThreeVectorF xXi(v0dst.v0x_Xi[k], v0dst.v0y_Xi[k], v0dst.v0z_Xi[k]);
+                StPhysicalHelix xiHelix(pXi, xXi, v0dst.magn * kilogauss, 1);//TODO
+
                 if(!pSetOfCutsXi(v0dst, k)) continue;//TODO: Implement this cuts set function
 
-                StPhysicalHelix xiHelix//TODO
                 StThreeVectorF boundStatePosition;
                 StThreeVectorF lambdaP, xiP;
              
-                Double_t lambdaXiDca = closestDistance(lambdaHelix, xiHelix, magneticField, primaryVertexPosition, boundStatePosition, lambdaP, xiP);
+                Double_t lambdaXiDca = closestDistance(lambdaHelix, xiHelix, v0dst.magn, primaryVertexPosition, boundStatePosition, lambdaP, xiP);
 
 //================Calculate The Invariant Mass========================
                 if(pCutLambdaXiDca(lambdaXiDca)){
